@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Space Shooter</string>
+    <string name="continue_text">Continue</string>
+    <string name="new_game_text">New game</string>
+    <string name="options_text">Options</string>
+    <string name="statistics_text">Statistics</string>
+</resources>
