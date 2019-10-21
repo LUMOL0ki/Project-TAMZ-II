@@ -1,7 +1,9 @@
 <resources>
     <string name="app_name">Space Shooter</string>
+    <string name="back_text">Back</string>
     <string name="continue_text">Continue</string>
     <string name="new_game_text">New game</string>
     <string name="options_text">Options</string>
-    <string name="statistics_text">Statistics</string>
+    <string name="leaderboard_text">Leaderboard</string>
+    <string name="Audio">Audio</string>
 </resources>

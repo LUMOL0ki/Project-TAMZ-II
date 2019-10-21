@@ -3,27 +3,30 @@ package com.example.spaceshooter;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.view.View;
-import android.view.WindowManager;
 
 public class GameActivity extends AppCompatActivity {
-    UIManager uiManager;
+    private UIManager UIManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        uiManager = new UIManager(this.getWindow());
+        UIManager = new UIManager(this.getWindow());
         //Fullscreen
-        uiManager.setFullscreen();
+        UIManager.setFullscreen();
         //Navigation bar
-        uiManager.hideNavigationBar();
+        UIManager.hideNavigationBar();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         //Navigation bar
-        uiManager.hideNavigationBar();
+        UIManager.hideNavigationBar();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 }
