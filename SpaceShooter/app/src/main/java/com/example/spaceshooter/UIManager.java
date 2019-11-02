@@ -24,4 +24,12 @@ public class UIManager {
                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE
         );
     }
+
+    public void showMenu(){
+
+    }
+
+    public void hideMenu(){
+
+    }
 }
