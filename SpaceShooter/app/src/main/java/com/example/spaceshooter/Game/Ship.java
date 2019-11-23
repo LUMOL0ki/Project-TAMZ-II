@@ -2,7 +2,7 @@ package com.example.spaceshooter.Game;
 
 public interface Ship {
     void fire();
-    void moveLeft(double direction, float speed);
+    void moveLeft(double direction);
     void moveSet();
     void setCollision(CollisionCategory collisionCategory);
     CollisionCategory getCollision();

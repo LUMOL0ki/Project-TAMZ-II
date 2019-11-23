@@ -1,9 +1,14 @@
 package com.example.spaceshooter.Game;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.shapes.OvalShape;
+import android.util.Log;
 
 import androidx.constraintlayout.solver.widgets.Rectangle;
+
+import com.example.spaceshooter.R;
 
 public class Player implements Ship{
 
@@ -13,19 +18,44 @@ public class Player implements Ship{
     private int minX;
     private int maxY;
     private int minY;
+    private boolean firing;
+
     private CollisionCategory collisionCategory;
     private Rectangle collisionBound;
+    private Context context;
+    private Bitmap model;
+    private float movementSpeed;
+    private double direction;
     private int health;
     private int score;
 
-    public Player(){
-        this.collisionCategory = CollisionCategory.FRIENDLY;
-        this.health = 100;
-        this.score = 0;
+    public Player(Context context, int screenX, int screenY){
+        init(context, screenX, screenY, 10.0f, 0);
     }
 
-    public Player(Context context){
+    public Player(Context context, int screenX, int screenY, float movementSpeed, int padding){
+        init(context, screenX, screenY, movementSpeed, padding);
+    }
+
+    private void init(Context context, int screenX, int screenY, float movementSpeed, int padding){
         this.collisionCategory = CollisionCategory.FRIENDLY;
+        this.context = context;
+        this.maxX = screenX - padding;
+        this.maxY = screenY - padding;
+        this.minX = 0 + padding;
+        this.minY = 0 + padding;
+
+        this.firing = false;
+
+        this.model = BitmapFactory.decodeResource(context.getResources(), R.drawable.player);
+        this.model = Bitmap.createScaledBitmap(model, model.getWidth() * 2/50, model.getHeight() * 2/50, false);
+
+        this.movementSpeed = movementSpeed;
+        this.direction = 0;
+
+        this.posX = maxX/2;
+        this.posY = maxY/2;
+
         this.health = 100;
         this.score = 0;
     }
@@ -38,14 +68,25 @@ public class Player implements Ship{
         return health;
     }
 
-    @Override
-    public void fire() {
-
+    public Bitmap getModel() {
+        return model;
     }
 
     @Override
-    public void moveLeft(double direction, float speed) {
+    public void fire() {
+        firing = !firing;
+        Log.d("Player", String.valueOf(firing));
+    }
 
+    @Override
+    public void moveLeft(double direction) {
+        if(direction > 1){
+            this.direction = 1;
+        }else if (direction < -1){
+            this.direction = -1;
+        }else {
+            this.direction = direction;
+        }
     }
 
     @Override
@@ -56,6 +97,10 @@ public class Player implements Ship{
     @Override
     public void setCollision(CollisionCategory collisionCategory) {
         this.collisionCategory = collisionCategory;
+    }
+
+    public void setMovementSpeed(int movementSpeed) {
+        this.movementSpeed = movementSpeed;
     }
 
     @Override
@@ -73,6 +118,30 @@ public class Player implements Ship{
 
     public void destroy(){
         //this.score = 0;
+    }
+
+    public void update(){
+        if(direction != 0){
+            if(posX <= maxX && direction == 1){
+                this.posX += movementSpeed * direction;
+            } else if (posX > maxX && direction == -1){
+                this.posX += movementSpeed * direction;
+            }
+            if(posX >= minX && direction == -1){
+                this.posX += movementSpeed * direction;
+            } else if (posX < minX && direction == 1){
+                this.posX += movementSpeed * direction;
+            }
+            //Log.d("Player", "PositionX: " + this.getX());
+        }
+    }
+
+    public void updateSize(int width, int height){
+        this.maxX = width - model.getWidth();
+        this.maxY = height - model.getHeight();
+
+        this.posX = maxX / 2;
+        this.posY = maxY-10;
     }
 
     @Override

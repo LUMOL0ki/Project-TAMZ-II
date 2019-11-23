@@ -13,7 +13,7 @@ public abstract class EnemyShip implements Ship {
     }
 
     @Override
-    public void moveLeft(double direction, float speed) {
+    public void moveLeft(double direction) {
 
     }
 
