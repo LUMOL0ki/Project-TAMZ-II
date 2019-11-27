@@ -3,6 +3,10 @@ package com.example.spaceshooter;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.graphics.PixelFormat;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -12,10 +16,16 @@ import android.widget.TextView;
 
 import com.example.spaceshooter.Game.GameView;
 
+
 public class GameActivity extends AppCompatActivity{
     private UIManager UIManager;
     private GameView gameView;
     private double moveSpeed;
+    private SensorManager sensorManager;
+    private Sensor sensor;
+    private SensorEventListener sensorEventListener;
+    private View.OnTouchListener onTouchListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -29,6 +39,25 @@ public class GameActivity extends AppCompatActivity{
 
         gameView = findViewById(R.id.gameView);
         moveSpeed = 10;
+
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        sensorEventListener = new SensorEventListener() {
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event.values[0] > 0.5 || event.values[0] < -0.5){
+                    gameView.getPlayer().moveLeft(-event.values[0]);
+                }else {
+                    gameView.getPlayer().moveLeft(0);
+                }
+            }
+
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
+
+            }
+        };
 
         gameView.setZOrderOnTop(true);
         //gameView.setZOrderMediaOverlay(true);
@@ -83,10 +112,16 @@ public class GameActivity extends AppCompatActivity{
         super.onResume();
         //Navigation bar
         UIManager.hideNavigationBar();
+        sensorManager.registerListener(sensorEventListener, sensor, sensorManager.SENSOR_DELAY_FASTEST);
     }
 
     @Override
     protected void onPause() {
         super.onPause();
+        sensorManager.unregisterListener(sensorEventListener);
+    }
+
+    public void onMotionEvent(MotionEvent e){
+
     }
 }

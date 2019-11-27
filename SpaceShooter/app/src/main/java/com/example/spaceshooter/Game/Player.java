@@ -122,12 +122,12 @@ public class Player implements Ship{
 
     public void update(){
         if(direction != 0){
-            if(posX <= maxX && direction == 1){
+            if(posX <= maxX && direction <= 1 && direction > 0){
                 this.posX += movementSpeed * direction;
             } else if (posX > maxX && direction == -1){
                 this.posX += movementSpeed * direction;
             }
-            if(posX >= minX && direction == -1){
+            if(posX >= minX && direction >= -1 && direction < 0){
                 this.posX += movementSpeed * direction;
             } else if (posX < minX && direction == 1){
                 this.posX += movementSpeed * direction;
