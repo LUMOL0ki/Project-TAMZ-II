@@ -11,32 +11,13 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="64dp"
-        android:background="#E9000000"
+        android:background="#ED000000"
         app:layout_constraintBottom_toTopOf="@+id/fireButton"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/leftButton"
-        android:layout_width="150dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="64dp"
-        android:background="#2AF3F3F3"
-        app:layout_constraintBottom_toBottomOf="@+id/gameView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/rightButton"
-        android:layout_width="150dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="64dp"
-        android:background="#2AF3F3F3"
-        app:layout_constraintBottom_toBottomOf="@+id/gameView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="1.0" />
 
     <Button
         android:id="@+id/menuButton"

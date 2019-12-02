@@ -4,6 +4,8 @@ import android.graphics.Canvas;
 import android.util.Log;
 import android.view.SurfaceHolder;
 
+import java.util.List;
+
 public class GameThread extends Thread {
     private int FPS = 60;
     private double avgFPS;

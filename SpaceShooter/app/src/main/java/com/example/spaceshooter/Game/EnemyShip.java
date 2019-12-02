@@ -6,10 +6,11 @@ public abstract class EnemyShip implements Ship {
     protected int score;
     protected int posX;
     protected  int posY;
+    protected  boolean firing;
 
     @Override
-    public void fire() {
-
+    public boolean fire() {
+        return firing;
     }
 
     @Override

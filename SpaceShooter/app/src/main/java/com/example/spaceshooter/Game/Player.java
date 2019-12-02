@@ -3,7 +3,6 @@ package com.example.spaceshooter.Game;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.shapes.OvalShape;
 import android.util.Log;
 
 import androidx.constraintlayout.solver.widgets.Rectangle;
@@ -19,6 +18,8 @@ public class Player implements Ship{
     private int maxY;
     private int minY;
     private boolean firing;
+    private int fireRate;
+    private int cooldown;
 
     private CollisionCategory collisionCategory;
     private Rectangle collisionBound;
@@ -27,17 +28,18 @@ public class Player implements Ship{
     private float movementSpeed;
     private double direction;
     private int health;
+    private int maxHealth;
     private int score;
 
     public Player(Context context, int screenX, int screenY){
-        init(context, screenX, screenY, 10.0f, 0);
+        init(context, screenX, screenY, 100, 10.0f, 0);
     }
 
     public Player(Context context, int screenX, int screenY, float movementSpeed, int padding){
-        init(context, screenX, screenY, movementSpeed, padding);
+        init(context, screenX, screenY, 100, movementSpeed, padding);
     }
 
-    private void init(Context context, int screenX, int screenY, float movementSpeed, int padding){
+    private void init(Context context, int screenX, int screenY, int health, float movementSpeed, int padding){
         this.collisionCategory = CollisionCategory.FRIENDLY;
         this.context = context;
         this.maxX = screenX - padding;
@@ -46,7 +48,8 @@ public class Player implements Ship{
         this.minY = 0 + padding;
 
         this.firing = false;
-
+        this.fireRate = 60/1;
+        this.cooldown = fireRate - 1;
         this.model = BitmapFactory.decodeResource(context.getResources(), R.drawable.player);
         this.model = Bitmap.createScaledBitmap(model, model.getWidth() * 2/50, model.getHeight() * 2/50, false);
 
@@ -56,7 +59,8 @@ public class Player implements Ship{
         this.posX = maxX/2;
         this.posY = maxY/2;
 
-        this.health = 100;
+        this.health = health;
+        this.maxHealth = health;
         this.score = 0;
     }
 
@@ -73,9 +77,36 @@ public class Player implements Ship{
     }
 
     @Override
-    public void fire() {
+    public boolean fire() {
         firing = !firing;
+        /*if(!firing){
+            cooldown = 0;
+        }*/
         Log.d("Player", String.valueOf(firing));
+        return firing;
+    }
+
+    public void setCooldown(){
+        cooldown++;
+        if(fireRate < cooldown){
+            cooldown = 0;
+        }
+    }
+
+    public int getCooldown(){
+        return cooldown;
+    }
+
+    public void setFireRate(int fireRate){
+        this.fireRate = 60/fireRate;
+    }
+
+    public int getFireRate(){
+        return fireRate;
+    }
+
+    public boolean isFiring(){
+        return firing;
     }
 
     @Override
@@ -117,7 +148,11 @@ public class Player implements Ship{
     }
 
     public void destroy(){
-        //this.score = 0;
+        if(health < 0){
+            this.score = 0;
+        }
+        else {
+        }
     }
 
     public void update(){
