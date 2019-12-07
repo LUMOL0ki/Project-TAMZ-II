@@ -2,19 +2,26 @@ package com.example.spaceshooter;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.example.spaceshooter.Game.Game;
+import com.example.spaceshooter.Game.GameState;
 import com.example.spaceshooter.Game.GameView;
+
+import java.util.Observable;
 
 
 public class GameActivity extends AppCompatActivity{
@@ -24,8 +31,7 @@ public class GameActivity extends AppCompatActivity{
     private SensorManager sensorManager;
     private Sensor sensor;
     private SensorEventListener sensorEventListener;
-    private boolean senzor;
-    //private View.OnTouchListener onTouchListener;
+    //private boolean senzor; //on or off senzor listener
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,67 +50,58 @@ public class GameActivity extends AppCompatActivity{
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
-        if(senzor){
-            sensorEventListener = new SensorEventListener() {
-                @Override
-                public void onSensorChanged(SensorEvent event) {
-                    if (event.values[0] > 0.5 || event.values[0] < -0.5){
-                        gameView.getPlayer().moveLeft(event.values[0]);
-                    }else {
-                        gameView.getPlayer().moveLeft(0);
-                    }
+        sensorEventListener = new SensorEventListener() {
+            private float prevValue = 0;
+            @Override
+            public void onSensorChanged(SensorEvent event) {
+                if (event.values[0] > 0.5 || event.values[0] < -0.5){
+                    gameView.getPlayer().moveLeft(-event.values[0]);
+                    prevValue = event.values[0];
+                }else if(event.values[0] != prevValue){
+                    gameView.getPlayer().moveLeft(0);
+                    prevValue = event.values[0];
+                    Log.d("Senzor", String.valueOf(prevValue));
                 }
+            }
 
-                @Override
-                public void onAccuracyChanged(Sensor sensor, int accuracy) {
+            @Override
+            public void onAccuracyChanged(Sensor sensor, int accuracy) {
 
-                }
-            };
-        }
-
+            }
+        };
 
         gameView.setZOrderOnTop(true);
         //gameView.setZOrderMediaOverlay(true);
         gameView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
 
         TextView score = findViewById(R.id.scoreTextView);
-        TextView health = findViewById(R.id.healthTextView);
+
         score.setText("" + gameView.getPlayer().getScore());
-        health.setText("Health: " + gameView.getPlayer().getHealth());
-/*
-        Button left = findViewById(R.id.leftButton);
-        Button right = findViewById(R.id.rightButton);
 
-        left.setOnTouchListener(new View.OnTouchListener() {
+        Game.GameListener gameListener = new Game.GameListener() {
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        gameView.getPlayer().moveLeft(-1);
-                        //Log.d("Window", "leftButton touched");
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        gameView.getPlayer().moveLeft(0);
-                        break;
-                }
-                return false;
+            public void onGameOver() {
+                Intent startGameOver = new Intent(getBaseContext(), GameOverActivity.class);
+                startActivity(startGameOver);
             }
-        });
+        };
 
-        right.setOnTouchListener(new View.OnTouchListener() {
+        Game.HealthListener healthListener = new Game.HealthListener() {
+            private String s = "";
+
             @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()){
-                    case MotionEvent.ACTION_DOWN:
-                        gameView.getPlayer().moveLeft(1);
-                        break;
-                    case MotionEvent.ACTION_UP:
-                        gameView.getPlayer().moveLeft(0);
-                        break;
-                }
-                return false;
+            public void onhealthChanged() {
+                s = "Health: " + gameView.getPlayer().getHealth();
+                Log.d("Player", s);
             }
-        });*/
+
+            public String getS() {
+                return s;
+            }
+        };
+
+        gameView.addHealthListener(healthListener);
+        gameView.addGameListener(gameListener);
     }
 
     public void onClickFire(View view){
@@ -130,9 +127,5 @@ public class GameActivity extends AppCompatActivity{
     protected void onPause() {
         super.onPause();
         sensorManager.unregisterListener(sensorEventListener);
-    }
-
-    public void onMotionEvent(MotionEvent e){
-
     }
 }

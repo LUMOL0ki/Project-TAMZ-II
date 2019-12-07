@@ -29,6 +29,7 @@ public class GameThread extends Thread {
         int frameCount = 0;
         long targetTime = 1000 / FPS;
 
+        //Game loop
         while(gameState == GameState.RUNNING){
             starTime = System.nanoTime();
             canvas = null;
@@ -52,7 +53,7 @@ public class GameThread extends Thread {
                 }
             }
 
-            timeMillis = (System.nanoTime() - starTime) / 1000000;
+            timeMillis = (System.nanoTime() - starTime) / 10000000;
             waitTime = targetTime - timeMillis;
 
             try {
@@ -67,7 +68,7 @@ public class GameThread extends Thread {
                 avgFPS = 1000 / ((totalTime / frameCount) / 1000000);
                 frameCount = 0;
                 totalTime = 0;
-                Log.d("GameThread", "Average FPS: " + avgFPS);
+                //Log.d("GameThread", "Average FPS: " + avgFPS);
             }
         }
     }

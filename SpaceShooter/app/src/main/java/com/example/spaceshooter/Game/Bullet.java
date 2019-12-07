@@ -53,7 +53,7 @@ public class Bullet {
         this.height = screenY;
         this.angle = 90;
         if(bulletMode == BulletMode.SINGLE || bulletMode == BulletMode.DUAL){
-            model = BitmapFactory.decodeResource(context.getResources(), R.drawable.bullet);
+            model = BitmapFactory.decodeResource(context.getResources(), R.drawable.green_bullet);
         }else {
             model = BitmapFactory.decodeResource(context.getResources(), R.drawable.bullete);
         }

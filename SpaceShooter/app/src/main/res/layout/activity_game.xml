@@ -23,7 +23,7 @@
         android:id="@+id/menuButton"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:text="||"
+        android:background="@android:drawable/ic_media_pause"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -56,7 +56,7 @@
         android:layout_height="wrap_content"
         android:background="#5BFFFFFF"
         android:onClick="onClickFire"
-        android:text="Fire"
+        android:text="@string/Fire"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

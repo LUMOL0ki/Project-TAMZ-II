@@ -3,9 +3,8 @@ package com.example.spaceshooter.Game;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.util.Log;
-
-import androidx.constraintlayout.solver.widgets.Rectangle;
 
 import com.example.spaceshooter.R;
 
@@ -22,7 +21,7 @@ public class Player implements Ship{
     private int cooldown;
 
     private CollisionCategory collisionCategory;
-    private Rectangle collisionBound;
+    private Rect collisionBound;
     private Context context;
     private Bitmap model;
     private float movementSpeed;
@@ -32,7 +31,7 @@ public class Player implements Ship{
     private int score;
 
     public Player(Context context, int screenX, int screenY){
-        init(context, screenX, screenY, 100, 10.0f, 0);
+        init(context, screenX, screenY, 10, 15.0f, 0);
     }
 
     public Player(Context context, int screenX, int screenY, float movementSpeed, int padding){
@@ -51,7 +50,7 @@ public class Player implements Ship{
         this.fireRate = 60/1;
         this.cooldown = fireRate - 1;
         this.model = BitmapFactory.decodeResource(context.getResources(), R.drawable.player);
-        this.model = Bitmap.createScaledBitmap(model, model.getWidth() * 2/50, model.getHeight() * 2/50, false);
+        this.model = Bitmap.createScaledBitmap(model, model.getWidth() * 25/50, model.getHeight() * 25/50, false);
 
         this.movementSpeed = movementSpeed;
         this.direction = 0;
@@ -62,6 +61,8 @@ public class Player implements Ship{
         this.health = health;
         this.maxHealth = health;
         this.score = 0;
+
+        this.collisionBound = new Rect(posX, posY, model.getWidth(), model.getHeight());
     }
 
     public int getScore(){
@@ -130,6 +131,10 @@ public class Player implements Ship{
         this.collisionCategory = collisionCategory;
     }
 
+    public Rect getCollisionBound() {
+        return collisionBound;
+    }
+
     public void setMovementSpeed(int movementSpeed) {
         this.movementSpeed = movementSpeed;
     }
@@ -144,6 +149,15 @@ public class Player implements Ship{
         health -= damage;
         if(health <= 0){
             destroy();
+        }
+    }
+
+    public void restoreHealth(int heal){
+        int tempHealth = health + heal;
+        if(tempHealth < 100){
+            health += heal;
+        }else {
+            health = 100;
         }
     }
 
@@ -168,6 +182,7 @@ public class Player implements Ship{
                 this.posX += movementSpeed * direction;
             }
             //Log.d("Player", "PositionX: " + this.getX());
+            collisionBound.offsetTo(posX, posY);
         }
     }
 
