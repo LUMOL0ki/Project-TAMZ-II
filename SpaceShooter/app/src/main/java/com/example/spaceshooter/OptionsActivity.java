@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.view.View;
+import android.widget.Switch;
+
+import com.example.spaceshooter.Game.Sounds;
 
 public class OptionsActivity extends AppCompatActivity {
     private UIManager UIManager;
@@ -18,6 +21,9 @@ public class OptionsActivity extends AppCompatActivity {
         //Navigation bar
         UIManager.hideNavigationBar();
         setContentView(R.layout.activity_options);
+
+        Switch audio = findViewById(R.id.audioSwitch);
+        audio.setChecked(Sounds.getInstance().getIsPlaying());
     }
 
     @Override
@@ -28,6 +34,14 @@ public class OptionsActivity extends AppCompatActivity {
     }
 
     public void onBackClick(View view){
+        this.UIManager = null;
+        this.closeContextMenu();
         finish();
+    }
+
+    public void onAudioClick(View view){
+        Sounds.getInstance().setIsPlaying(!Sounds.getInstance().getIsPlaying());
+        Switch audio = findViewById(R.id.audioSwitch);
+        audio.setChecked(Sounds.getInstance().getIsPlaying());
     }
 }

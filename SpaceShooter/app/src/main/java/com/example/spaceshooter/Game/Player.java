@@ -192,6 +192,7 @@ public class Player implements Ship{
 
         this.posX = maxX / 2;
         this.posY = maxY-10;
+        this.collisionBound.offsetTo(posX, posY);
     }
 
     @Override

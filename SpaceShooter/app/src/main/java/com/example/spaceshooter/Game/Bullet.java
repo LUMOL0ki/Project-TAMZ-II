@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.util.Log;
 
 import androidx.constraintlayout.solver.widgets.Rectangle;
@@ -20,6 +21,7 @@ public class Bullet {
     private Context context;
     private int height;
     private float angle;
+    private int damage;
 
     private int posX;
     private int posY;
@@ -29,40 +31,43 @@ public class Bullet {
 
     private Bitmap parentModel;
     private Bitmap model;
-    private Rectangle collision;
+    private Rect collisionBound;
     private CollisionCategory collisionCategories;
 
     public Bullet(Context context, int screenY, int posX, int posY, BulletMode bulletMode, Bitmap parentModel, double direction){
-        init(context, screenY, posX, posY, 0, bulletMode, parentModel, direction, 10);
+        init(context, screenY, posX, posY, 0, bulletMode, parentModel, 10, direction, 10);
     }
 
     public Bullet(Context context, int screenY, int posX, int posY, BulletMode bulletMode, Bitmap parentModel, double direction, float speed){
-        init(context, screenY, posX, posY, 0, bulletMode, parentModel, direction, speed);
+        init(context, screenY, posX, posY, 0, bulletMode, parentModel, 10, direction, speed);
     }
 
     public Bullet(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, double direction){
-        init(context, screenY, posX, posY, posOffset, bulletMode, parentModel, direction, 10);
+        init(context, screenY, posX, posY, posOffset, bulletMode, parentModel, 10, direction, 10);
     }
 
-    public Bullet(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, double direction, float speed){
-        init(context, screenY, posX, posY, posOffset, bulletMode, parentModel, direction, speed);
+    public Bullet(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, int damage, double direction, float speed){
+        init(context, screenY, posX, posY, posOffset, bulletMode, parentModel, damage, direction, speed);
     }
 
-    private void init(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, double direction, float speed){
+    private void init(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, int damage, double direction, float speed){
         this.context = context;
         this.height = screenY;
-        this.angle = 90;
+        this.angle = 0;
+        this.damage = damage;
         if(bulletMode == BulletMode.SINGLE || bulletMode == BulletMode.DUAL){
             model = BitmapFactory.decodeResource(context.getResources(), R.drawable.green_bullet);
         }else {
             model = BitmapFactory.decodeResource(context.getResources(), R.drawable.bullete);
         }
 
+        model = Bitmap.createScaledBitmap(this.model, model.getWidth() * 20/50, model.getHeight() * 20/50, false);
+
         if(direction > 0){
-            model = Rotate(model, -angle);
+            model = Rotate(model, angle);
         }
         else if (direction < 0){
-            model = Rotate(model, angle);
+            model = Rotate(model, 180-angle);
             /*
             Matrix matrix = new Matrix();
             matrix.postRotate(angle);
@@ -77,6 +82,15 @@ public class Bullet {
 
         this.direction = direction;
         this.speed = speed;
+        this.collisionBound = new Rect(0,0, model.getWidth(), model.getHeight());
+    }
+
+    public void setDamage(int damage) {
+        this.damage = damage;
+    }
+
+    public int getDamage() {
+        return damage;
     }
 
     public Bitmap Rotate(Bitmap model, float degree){
@@ -91,13 +105,14 @@ public class Bullet {
 
     public void update(){
         //this.posY -= direction*speed;
-        moveForward(angle*2);
+        moveForward(angle);
 
     }
 
     public void moveForward(float angle){
-        this.posX += speed * sin(toRadians(angle));
-        this.posY += speed * cos(toRadians(angle));
+        this.posX += speed * sin(toRadians(180+angle));
+        this.posY += speed * cos(toRadians(180+angle));
+        collisionBound.offsetTo(posX, posY);
     }
 
     public void destroy(){
@@ -109,6 +124,10 @@ public class Bullet {
             Log.d("Bullet", "Help me I am lost.");
         }
         direction = 0;
+    }
+
+    public Rect getCollisionBound() {
+        return collisionBound;
     }
 
     public int getX() {

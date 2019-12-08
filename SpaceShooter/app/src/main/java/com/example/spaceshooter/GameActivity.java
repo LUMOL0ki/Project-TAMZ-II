@@ -8,6 +8,9 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -20,6 +23,7 @@ import android.widget.TextView;
 import com.example.spaceshooter.Game.Game;
 import com.example.spaceshooter.Game.GameState;
 import com.example.spaceshooter.Game.GameView;
+import com.example.spaceshooter.Game.Sounds;
 
 import java.util.Observable;
 
@@ -32,10 +36,21 @@ public class GameActivity extends AppCompatActivity{
     private Sensor sensor;
     private SensorEventListener sensorEventListener;
     //private boolean senzor; //on or off senzor listener
+    private MediaPlayer mediaPlayer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
+        if (Sounds.getInstance().getIsPlaying()) {
+            mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.hum);
+            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                @Override
+                public void onPrepared(MediaPlayer mp) {
+                    mp.setLooping(true);
+                    mp.start();
+                }
+            });
+        }
         super.onCreate(savedInstanceState);
         UIManager = new UIManager(this.getWindow());
         //Fullscreen
@@ -82,6 +97,7 @@ public class GameActivity extends AppCompatActivity{
             @Override
             public void onGameOver() {
                 Intent startGameOver = new Intent(getBaseContext(), GameOverActivity.class);
+                Sounds.release(mediaPlayer);
                 startActivity(startGameOver);
             }
         };
@@ -102,6 +118,17 @@ public class GameActivity extends AppCompatActivity{
 
         gameView.addHealthListener(healthListener);
         gameView.addGameListener(gameListener);
+        gameView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+            @Override
+            public void onViewAttachedToWindow(View v) {
+
+            }
+
+            @Override
+            public void onViewDetachedFromWindow(View v) {
+                Sounds.release(mediaPlayer);
+            }
+        });
     }
 
     public void onClickFire(View view){

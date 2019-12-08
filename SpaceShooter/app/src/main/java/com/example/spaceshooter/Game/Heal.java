@@ -17,29 +17,33 @@ public class Heal extends DynamicObject {
 
     public Heal(Context context){
         init(context, 0, 0, 0, -50, R.drawable.heal);
-        this.heal = 10;
+        init();
     }
 
     public Heal(Context context, int posX){
         init(context, 0, 0, posX, -50, R.drawable.heal);
-        this.heal = 10;
+        init();
     }
 
     public Heal(Context context, int screenX , int screenY){
-        init(context, screenX, screenY, 0, 50, R.drawable.heal);
-        this.heal = 10;
+        init(context, screenX, screenY, 0, -50, R.drawable.heal);
+        init();
     }
 
     public Heal(Context context, int screenX , int screenY, int posX){
         init(context, screenX, screenY, posX, 50, R.drawable.heal);
-        this.heal = 10;
-        this.model = Bitmap.createScaledBitmap(this.model, this.model.getWidth() * 15/25, this.model.getHeight() * 15/25, false);
-        this.collisionBound = new Rect(posX, posY, this.model.getWidth(), this.model.getHeight());
+        init();
     }
 
     public Heal(Context context, int screenX , int screenY,int posX, int heal){
         init(context, screenX, screenY, posX, -10, R.drawable.heal);
-        this.heal = heal;
+        init();
+    }
+
+    private void init(){
+        this.heal = 10;
+        this.model = Bitmap.createScaledBitmap(this.model, this.model.getWidth() * 18/25, this.model.getHeight() * 18/25, false);
+        this.collisionBound = new Rect(0, 0, this.model.getWidth(), this.model.getHeight());
     }
 
     public int getHeal() {

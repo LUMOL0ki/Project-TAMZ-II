@@ -42,9 +42,9 @@ public abstract class DynamicObject {
         this.maxY = screenY;
         this.direction = -1;
         this.angle = 0;
-        this.speed = new Random().nextInt(25) + 5;
+        this.speed = new Random().nextInt(12) + 5;
         this.collisionCategory = CollisionCategory.ENEMY;
-        this.collisionBound = new Rect(posX, posY, this.model.getWidth(), this.model.getHeight());
+        //this.collisionBound = new Rect(posX, posY, this.model.getWidth(), this.model.getHeight());
     }
 
     public Bitmap getModel() {
@@ -80,6 +80,7 @@ public abstract class DynamicObject {
     public void moveForward(float angle){
         this.posX += speed * sin(toRadians(angle));
         this.posY += speed * cos(toRadians(angle));
+        collisionBound.offsetTo(posX, posY);
     }
 
     public void genPosX(){
@@ -88,14 +89,13 @@ public abstract class DynamicObject {
 
     public void update(){
         moveForward(angle);
-        collisionBound.offsetTo(posX, posY);
     }
 
     public void updateSize(int width, int height){
         this.maxX = width - model.getWidth();
         this.maxY = height + model.getHeight();
-
         this.posY = 0 - model.getHeight();
+        this.collisionBound.offsetTo(posX, posY);
     }
 
     public void destroy(){
@@ -107,5 +107,13 @@ public abstract class DynamicObject {
             Log.d("Dynamic object", "Help me I am lost.");
         }
         direction = 0;
+    }
+
+    public int getX() {
+        return posX;
+    }
+
+    public int getY() {
+        return posY;
     }
 }

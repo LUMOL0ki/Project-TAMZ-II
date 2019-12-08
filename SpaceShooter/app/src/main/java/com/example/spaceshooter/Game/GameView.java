@@ -2,6 +2,8 @@ package com.example.spaceshooter.Game;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -9,6 +11,13 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import androidx.annotation.Nullable;
+
+import com.example.spaceshooter.Game.Factory.AsteroidFactory;
+import com.example.spaceshooter.Game.Factory.BulletFactory;
+import com.example.spaceshooter.Game.Factory.GunFactory;
+import com.example.spaceshooter.Game.Factory.HealFactory;
+import com.example.spaceshooter.Game.Factory.ReloadFactory;
+import com.example.spaceshooter.R;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -86,6 +95,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.screenX = w;
         this.screenY = h;
         player.updateSize(w, h);
+        bulletFactory = new BulletFactory(screenY);
+        healFactory = new HealFactory(screenY);
+        reloadFactory = new ReloadFactory(screenY);
+        asteroidFactory = new AsteroidFactory(screenY);
+        gunFactory = new GunFactory(screenY);
         //Log.d("Game", "Width: " + w + " Height: " + h);
     }
 
@@ -116,113 +130,110 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         return super.onTouchEvent(event);
     }
 
-    private ArrayList<Bullet> playerBullets = new ArrayList<>();
-    private ArrayList<Heal> heals = new ArrayList<>();
-    private ArrayList<Gun> guns = new ArrayList<>();
-    private ArrayList<Asteroid> asteroids = new ArrayList<>();
-
-    private Iterator<Bullet> itePlayerBullets;
-    private Iterator<Heal> iteHeal;
-    private Iterator<Gun> iteGun;
-    private Iterator<Asteroid> iteAsteroid;
+    BulletFactory bulletFactory;
+    HealFactory healFactory;
+    GunFactory gunFactory;
+    AsteroidFactory asteroidFactory;
+    ReloadFactory reloadFactory;
 
     public void update(){
         player.update();
 
-        if(heals.isEmpty()){
-            Heal tempHeal = new Heal(context, screenX, screenY);
-            tempHeal.genPosX();
-            heals.add(tempHeal);
-        }
-
-        if(guns.isEmpty()){
-            Gun tempGun = new Gun(context, screenX, screenY, BulletMode.DUAL);
-            tempGun.genPosX();
-            guns.add(tempGun);
-        }
-
-        if(asteroids.size() < 3){
-            Asteroid tempAsteroid = new Asteroid(context, screenX, screenY);
-            tempAsteroid.genPosX();
-            asteroids.add(tempAsteroid);
-        }
-
-        iteHeal = heals.iterator();
-        iteGun = guns.iterator();
-        iteAsteroid = asteroids.iterator();
-
-        while (iteHeal.hasNext()){
-            Heal heal = iteHeal.next();
-
-            if(heal.posY > screenY){
-                iteHeal.remove();
-                heal.destroy();
-            }
-            else {
-                heal.update();
-                if (heal.getCollisionBound().intersect(player.getCollisionBound())){
-                    iteHeal.remove();
-                    heal.destroy();
-                    player.restoreHealth(heal.getHeal());
-                    onHealthChanged();
-                }
-            }
-        }
-
-        while (iteGun.hasNext()){
-            Gun gun = iteGun.next();
-
-            if(gun.posY > screenY){
-                iteGun.remove();
-                gun.destroy();
-            }
-            else {
-                gun.update();
-                if (gun.getCollisionBound().intersect(player.getCollisionBound())){
-                    iteGun.remove();
-                    gun.destroy();
-                    //player.setFireRate();
-                }
-            }
-        }
-
-        while (iteAsteroid.hasNext()){
-            Asteroid asteroid = iteAsteroid.next();
-
-            if (asteroid.posY > screenY){
-                iteAsteroid.remove();
-                asteroid.destroy();
-            }
-            else {
-                asteroid.update();
-                if (asteroid.getCollisionBound().intersect(player.getCollisionBound())){
-                    iteAsteroid.remove();
-                    asteroid.destroy();
-                    player.hit(asteroid.getDamage());
-                    onHealthChanged();
-                }
-            }
-        }
-
         if(player.isFiring()){
             player.setCooldown();
             if(player.getCooldown() == player.getFireRate()){
-                Bullet temp = new Bullet(context, screenY, player.getX(), player.getY(), BulletMode.SINGLE, player.getModel(), 1, 30);
-                playerBullets.add(temp);
+                bulletFactory.add(new Bullet(context, screenY, player.getX(), player.getY(), BulletMode.SINGLE, player.getModel(), 1, 30));
             }
         }
 
-        itePlayerBullets = playerBullets.iterator();
+        bulletFactory.setIterator();
+        bulletFactory.update();
 
-        while (itePlayerBullets.hasNext()){
-            Bullet bullet = itePlayerBullets.next();
+        if(healFactory.getArray().isEmpty()){
+            Heal tempHeal = new Heal(context, screenX, screenY);
+            tempHeal.genPosX();
+            healFactory.add(tempHeal);
+        }
 
-            if(bullet.getY() < 0 || bullet.getY() > screenY){
-                itePlayerBullets.remove();
-                bullet.destroy();
+        healFactory.setIterator();
+        healFactory.update();
+        Iterator<Heal> tempHeal = healFactory.getArray().iterator();
+        while (tempHeal.hasNext()){
+            Heal heal = tempHeal.next();
+            if (heal.getCollisionBound().intersect(player.getCollisionBound())){
+                tempHeal.remove();
+                heal.destroy();
+                player.restoreHealth(heal.getHeal());
+                onHealthChanged();
+            }
+        }
+
+        if(gunFactory.getArray().isEmpty()){
+            Gun tempGun = new Gun(context, screenX, screenY, BulletMode.DUAL);
+            tempGun.genPosX();
+            gunFactory.add(tempGun);
+        }
+
+        gunFactory.setIterator();
+        gunFactory.update();
+        Iterator<Gun> tempGun = gunFactory.getArray().iterator();
+        while (tempGun.hasNext()){
+            Gun gun = tempGun.next();
+            if (gun.getCollisionBound().intersect(player.getCollisionBound())){
+                tempGun.remove();
+                gun.destroy();
+                //player.setFireRate();
+            }
+        }
+
+        if(asteroidFactory.getArray().size() < 3){
+            Asteroid tempAsteroid = new Asteroid(context, screenX, screenY);
+            tempAsteroid.genPosX();
+            asteroidFactory.add(tempAsteroid);
+        }
+
+        asteroidFactory.setIterator();
+        asteroidFactory.update();
+        Iterator<Asteroid> tempAsteriod = asteroidFactory.getArray().iterator();
+        while (tempAsteriod.hasNext()){
+            Asteroid asteroid = tempAsteriod.next();
+            if (asteroid.getCollisionBound().intersect(player.getCollisionBound())){
+                tempAsteriod.remove();
+                asteroid.destroy();
+                player.hit(asteroid.getDamage());
+                onHealthChanged();
             }
             else {
-                bullet.update();
+                Iterator<Bullet> tempBullet = bulletFactory.getArray().iterator();
+                while (tempBullet.hasNext()) {
+                    Bullet bullet = tempBullet.next();
+                    if (bullet.getCollisionBound().intersect(asteroid.getCollisionBound())) {
+                        tempBullet.remove();
+                        bullet.destroy();
+                        asteroid.health -= bullet.getDamage();
+                        if (asteroid.health <= 0){
+                            tempAsteriod.remove();
+                            asteroid.destroy();
+                        }
+                    }
+                }
+            }
+        }
+
+        if (reloadFactory.isEmpty()){
+            Reload tempReload = new Reload(context, screenX, screenY);
+            tempReload.genPosX();
+            reloadFactory.add(tempReload);
+        }
+        reloadFactory.setIterator();
+        reloadFactory.update();
+        Iterator<Reload> tempReload = reloadFactory.getArray().iterator();
+        while (tempReload.hasNext()){
+            Reload reload = tempReload.next();
+            if (reload.getCollisionBound().intersect(player.getCollisionBound())){
+                tempReload.remove();
+                reload.destroy();
+                //player.setFireRate();
             }
         }
 
@@ -233,30 +244,40 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public void draw(Canvas canvas) {
         super.draw(canvas);
-        //Log.d("Game", "onDraw executed");
-        //Log.d("Game", player.getX() + " " + player.getY());
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
 
-        for (Heal heal: heals) {
+        for (Heal heal: healFactory.getArray()) {
             canvas.drawBitmap(heal.getModel(), heal.posX, heal.posY, null);
+            //canvas.drawRect(heal.collisionBound, paint);
         }
 
-        for (Gun gun: guns) {
+        for (Gun gun: gunFactory.getArray()) {
             canvas.drawBitmap(gun.getModel(), gun.posX, gun.posY, null);
+            //canvas.drawRect(gun.collisionBound, paint);
         }
 
-        for (Asteroid asteroid: asteroids) {
+        for (Asteroid asteroid: asteroidFactory.getArray()) {
             canvas.drawBitmap(asteroid.getModel(), asteroid.posX, asteroid.posY, null);
+            //canvas.drawRect(asteroid.collisionBound, paint);
         }
 
-        for (Bullet playerBullet : playerBullets) {
+        for (Reload reload: reloadFactory.getArray()) {
+            canvas.drawBitmap(reload.getModel(), reload.posX, reload.posY, null);
+            //canvas.drawRect(asteroid.collisionBound, paint);
+        }
+
+        for (Bullet playerBullet : bulletFactory.getArray()) {
             canvas.drawBitmap(playerBullet.getModel(), playerBullet.getX(), playerBullet.getY(), null);
+            //canvas.drawRect(playerBullet.getCollisionBound(), paint);
         }
 
         canvas.drawBitmap(player.getModel(), player.getX(), player.getY(), null);
+        //canvas.drawRect(player.getCollisionBound(), paint);
     }
 
     public List<Bullet> getPlayerBullets(){
-        return playerBullets;
+        return bulletFactory.getArray();
     }
 
     public int getScreenY(){

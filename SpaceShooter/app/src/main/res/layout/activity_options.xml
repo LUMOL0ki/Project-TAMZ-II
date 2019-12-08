@@ -30,6 +30,7 @@
         android:layout_marginTop="100dp"
         android:layout_weight="1"
         android:checked="true"
+        android:onClick="onAudioClick"
         android:text="@string/Audio"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
