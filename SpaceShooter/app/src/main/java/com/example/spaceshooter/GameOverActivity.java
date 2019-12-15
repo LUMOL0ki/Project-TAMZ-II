@@ -7,18 +7,33 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.spaceshooter.Game.Leaderboard;
 import com.example.spaceshooter.Game.Sounds;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 
 public class GameOverActivity extends AppCompatActivity {
 
     private MediaPlayer mediaPlayer;
+    private UIManager UIManager;
+    private int score;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        UIManager = new UIManager(this.getWindow());
+        //Fullscreen
+        UIManager.setFullscreen();
+        //Navigation bar
+        UIManager.hideNavigationBar();
+
         setContentView(R.layout.activity_game_over);
         Button retry = findViewById(R.id.retryButton);
 
@@ -30,6 +45,34 @@ public class GameOverActivity extends AppCompatActivity {
                     mp.start();
                 }
             });
+        }
+
+        score = getIntent().getIntExtra("score", 0);
+        Log.d("Score", String.valueOf(score));
+
+        Leaderboard leaderboard = new Leaderboard();
+
+        try {
+            FileInputStream fileInputStream = openFileInput("leaderboard.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+
+            StringBuffer sb = new StringBuffer();
+            String line = reader.readLine();
+
+            while (line != null) {
+                sb.append(line+ ", ");
+                String[] split = line.split(" ");
+                leaderboard.nicks.add(split[0]);
+                leaderboard.scores.add(Integer.parseInt(split[1]));
+                line = reader.readLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if(score > leaderboard.scores.get(leaderboard.scores.size()-1)){
+            Button save = findViewById(R.id.saveButton);
+            save.setEnabled(true);
         }
     }
 
@@ -43,5 +86,11 @@ public class GameOverActivity extends AppCompatActivity {
         Intent backToMenu = new Intent(getBaseContext(), MainActivity.class);
         Sounds.release(mediaPlayer);
         startActivity(backToMenu);
+    }
+
+    public void onSave(View view){
+        Intent saveScore = new Intent(getBaseContext(), SaveScoreActivity.class);
+        saveScore.putExtra("score", score);
+        startActivity(saveScore);
     }
 }

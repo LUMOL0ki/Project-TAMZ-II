@@ -10,6 +10,7 @@ import java.util.Random;
 
 public class Asteroid extends DynamicObject {
     private int damage;
+    private int score;
 
     public Asteroid(Context context, int screenX, int screenY){
         init(context, screenX, screenY, 0, -50, R.drawable.asteroid);
@@ -24,10 +25,15 @@ public class Asteroid extends DynamicObject {
         this.model = Rotate(model, new Random().nextInt(60));
         this.collisionBound = new Rect(0, 0, this.model.getWidth(), this.model.getHeight());
         this.damage = 5 + (int)speed;
+        this.score = 25;
         this.angle = new Random().nextInt(60)-30;
     }
 
     public int getDamage() {
         return damage;
+    }
+
+    public int getScore() {
+        return score;
     }
 }

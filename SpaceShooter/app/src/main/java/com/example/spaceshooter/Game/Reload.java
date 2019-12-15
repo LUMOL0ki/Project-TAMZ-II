@@ -12,13 +12,13 @@ public class Reload extends DynamicObject {
     private int fireRate;
 
 
-    public Reload(Context context, int screenX, int screenY){
+    public Reload(Context context, int screenX, int screenY, int fireRate){
         init(context, screenX, screenY, 0, -50, R.drawable.reload);
-        init();
+        init(fireRate);
     }
 
-    private void init(){
-        this.fireRate = 5;
+    private void init(int fireRate){
+        this.fireRate = fireRate;
         //this.model = Bitmap.createScaledBitmap(this.model, this.model.getWidth() * 22/25, this.model.getHeight() * 22/25, false);
         this.collisionBound = new Rect(0, 0, this.model.getWidth(), this.model.getHeight());
     }

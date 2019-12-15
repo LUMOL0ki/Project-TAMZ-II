@@ -53,7 +53,7 @@ public class GameThread extends Thread {
                 }
             }
 
-            timeMillis = (System.nanoTime() - starTime) / 10000000;
+            timeMillis = (System.nanoTime() - starTime) / 100000000;
             waitTime = targetTime - timeMillis;
 
             try {

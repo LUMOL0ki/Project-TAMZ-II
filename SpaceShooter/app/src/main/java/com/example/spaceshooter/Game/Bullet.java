@@ -42,6 +42,11 @@ public class Bullet {
         init(context, screenY, posX, posY, 0, bulletMode, parentModel, 10, direction, speed);
     }
 
+    public Bullet(Context context, int screenY, int posX, int posY, BulletMode bulletMode, Bitmap parentModel, double direction, float speed, CollisionCategory collisionCategory){
+        init(context, screenY, posX, posY, 0, bulletMode, parentModel, 10, direction, speed);
+        this.collisionCategories = collisionCategory;
+    }
+
     public Bullet(Context context, int screenY, int posX, int posY, int posOffset, BulletMode bulletMode, Bitmap parentModel, double direction){
         init(context, screenY, posX, posY, posOffset, bulletMode, parentModel, 10, direction, 10);
     }
@@ -67,7 +72,7 @@ public class Bullet {
             model = Rotate(model, angle);
         }
         else if (direction < 0){
-            model = Rotate(model, 180-angle);
+            model = Rotate(model, 180+angle);
             /*
             Matrix matrix = new Matrix();
             matrix.postRotate(angle);

@@ -37,6 +37,7 @@ public class GameActivity extends AppCompatActivity{
     private SensorEventListener sensorEventListener;
     //private boolean senzor; //on or off senzor listener
     private MediaPlayer mediaPlayer;
+    private Thread thread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,35 +89,17 @@ public class GameActivity extends AppCompatActivity{
         gameView.setZOrderOnTop(true);
         //gameView.setZOrderMediaOverlay(true);
         gameView.getHolder().setFormat(PixelFormat.TRANSLUCENT);
-
-        TextView score = findViewById(R.id.scoreTextView);
-
-        score.setText("" + gameView.getPlayer().getScore());
-
         Game.GameListener gameListener = new Game.GameListener() {
             @Override
             public void onGameOver() {
+                Log.d("Gameover", "" + gameView.getPlayer().getScore());
                 Intent startGameOver = new Intent(getBaseContext(), GameOverActivity.class);
+                startGameOver.putExtra("score", gameView.getPlayer().getScore());
                 Sounds.release(mediaPlayer);
                 startActivity(startGameOver);
             }
         };
 
-        Game.HealthListener healthListener = new Game.HealthListener() {
-            private String s = "";
-
-            @Override
-            public void onhealthChanged() {
-                s = "Health: " + gameView.getPlayer().getHealth();
-                Log.d("Player", s);
-            }
-
-            public String getS() {
-                return s;
-            }
-        };
-
-        gameView.addHealthListener(healthListener);
         gameView.addGameListener(gameListener);
         gameView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
             @Override

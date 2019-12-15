@@ -57,7 +57,6 @@ public class Player implements Ship{
 
         this.posX = maxX/2;
         this.posY = maxY/2;
-
         this.health = health;
         this.maxHealth = health;
         this.score = 0;
@@ -67,6 +66,10 @@ public class Player implements Ship{
 
     public int getScore(){
         return score;
+    }
+
+    public void setScore(int score) {
+        this.score += score;
     }
 
     public int getHealth(){
@@ -99,7 +102,7 @@ public class Player implements Ship{
     }
 
     public void setFireRate(int fireRate){
-        this.fireRate = 60/fireRate;
+        this.fireRate = 60/(fireRate);
     }
 
     public int getFireRate(){
@@ -162,11 +165,11 @@ public class Player implements Ship{
     }
 
     public void destroy(){
-        if(health < 0){
+        /*if(health < 0){
             this.score = 0;
         }
         else {
-        }
+        }*/
     }
 
     public void update(){

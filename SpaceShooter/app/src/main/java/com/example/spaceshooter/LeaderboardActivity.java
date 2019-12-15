@@ -3,10 +3,16 @@ package com.example.spaceshooter;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.example.spaceshooter.Game.Leaderboard;
+
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,13 +31,27 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_leaderboard);
 
-        ListView listview = findViewById(R.id.leaderBoardListView);
         List<String> list = new ArrayList<String>();
-        list.add("1");
-        list.add("2");
-        list.add("3");
-        list.add("4");
-        list.add("5");
+        int i = 1;
+        try {
+            FileInputStream fileInputStream = openFileInput("leaderboard.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+
+            StringBuffer sb = new StringBuffer();
+            String line = reader.readLine();
+
+            while (line != null) {
+                sb.append(line+ ", ");
+                String[] split = line.split(" ");
+                list.add(String.valueOf(i) + " | " + split[0] + "\t\t\t" + split[1].trim());
+                line = reader.readLine();
+                i++;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        ListView listview = findViewById(R.id.leaderBoardListView);
 
         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(
                 this,

@@ -14,6 +14,8 @@ import androidx.annotation.Nullable;
 
 import com.example.spaceshooter.Game.Factory.AsteroidFactory;
 import com.example.spaceshooter.Game.Factory.BulletFactory;
+import com.example.spaceshooter.Game.Factory.EnemyFactory;
+import com.example.spaceshooter.Game.Factory.EnemyType;
 import com.example.spaceshooter.Game.Factory.GunFactory;
 import com.example.spaceshooter.Game.Factory.HealFactory;
 import com.example.spaceshooter.Game.Factory.ReloadFactory;
@@ -22,6 +24,7 @@ import com.example.spaceshooter.R;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Random;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
@@ -96,10 +99,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         this.screenY = h;
         player.updateSize(w, h);
         bulletFactory = new BulletFactory(screenY);
+        enemyBulletFactory = new BulletFactory(screenY);
         healFactory = new HealFactory(screenY);
         reloadFactory = new ReloadFactory(screenY);
         asteroidFactory = new AsteroidFactory(screenY);
         gunFactory = new GunFactory(screenY);
+        fighterFactory = new EnemyFactory(EnemyType.FIGTHER, screenY);
         //Log.d("Game", "Width: " + w + " Height: " + h);
     }
 
@@ -131,13 +136,30 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     BulletFactory bulletFactory;
+    BulletFactory enemyBulletFactory;
     HealFactory healFactory;
     GunFactory gunFactory;
     AsteroidFactory asteroidFactory;
     ReloadFactory reloadFactory;
+    EnemyFactory fighterFactory;
 
     public void update(){
         player.update();
+
+        Iterator<Bullet> tempEnemyBullet = enemyBulletFactory.getArray().iterator();
+        while (tempEnemyBullet.hasNext()) {
+            Bullet bullet = tempEnemyBullet.next();
+            if (bullet.getCollisionBound().intersect(player.getCollisionBound())) {
+                tempEnemyBullet.remove();
+                bullet.destroy();
+                player.hit(bullet.getDamage());
+                if (player.getHealth() <= 0){
+                    //player.setScore(player.getScore());
+                    tempEnemyBullet.remove();
+                    player.destroy();
+                }
+            }
+        }
 
         if(player.isFiring()){
             player.setCooldown();
@@ -149,7 +171,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         bulletFactory.setIterator();
         bulletFactory.update();
 
-        if(healFactory.getArray().isEmpty()){
+        if(player.getScore() % 100 == 0 && healFactory.isEmpty() && player.getScore() != 0){
             Heal tempHeal = new Heal(context, screenX, screenY);
             tempHeal.genPosX();
             healFactory.add(tempHeal);
@@ -165,10 +187,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                 heal.destroy();
                 player.restoreHealth(heal.getHeal());
                 onHealthChanged();
+                //Log.d("Health", String.valueOf(player.getHealth()));
             }
         }
 
-        if(gunFactory.getArray().isEmpty()){
+        if(player.getScore() % 400 == 0 && gunFactory.isEmpty() && player.getScore() != 0){
             Gun tempGun = new Gun(context, screenX, screenY, BulletMode.DUAL);
             tempGun.genPosX();
             gunFactory.add(tempGun);
@@ -182,7 +205,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             if (gun.getCollisionBound().intersect(player.getCollisionBound())){
                 tempGun.remove();
                 gun.destroy();
-                //player.setFireRate();
             }
         }
 
@@ -212,6 +234,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                         bullet.destroy();
                         asteroid.health -= bullet.getDamage();
                         if (asteroid.health <= 0){
+                            player.setScore(asteroid.getScore());
                             tempAsteriod.remove();
                             asteroid.destroy();
                         }
@@ -220,8 +243,60 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        if (reloadFactory.isEmpty()){
-            Reload tempReload = new Reload(context, screenX, screenY);
+        if (player.getScore() % 25 == 0 && fighterFactory.isEmpty() && player.getScore() != 0){
+            Fighter tempFighter = new Fighter(context, screenX, screenY);
+            tempFighter.genPosX();
+            fighterFactory.add(tempFighter);
+            player.setScore(1250);
+        }
+
+        if(player.getScore() % 200 == 0 && fighterFactory.getFighter().size() < 3 && player.getScore() != 0){
+            fighterFactory.createFleet(context, screenX, screenY, 5);
+        }
+
+        fighterFactory.setIterator();
+        fighterFactory.update();
+
+        Iterator<Fighter> tempFighter = fighterFactory.getFighter().iterator();
+        while (tempFighter.hasNext()){
+            Fighter fighter = tempFighter.next();
+            if(new Random().nextInt(100) % 100 == 0){
+                enemyBulletFactory.add(new Bullet(context, screenY, fighter.getX(), fighter.getY(), BulletMode.SINGLE, fighter.getModel(), -1, -30, CollisionCategory.ENEMY));
+            }
+            if (fighter.getCollisionBound().intersect(player.getCollisionBound())){
+                tempFighter.remove();
+                fighter.destroy();
+                player.hit(fighter.getDamage());
+                onHealthChanged();
+            }
+            else {
+                Iterator<Bullet> tempBullet = bulletFactory.getArray().iterator();
+                while (tempBullet.hasNext()) {
+                    Bullet bullet = tempBullet.next();
+                    if (bullet.getCollisionBound().intersect(fighter.getCollisionBound())) {
+                        tempBullet.remove();
+                        bullet.destroy();
+                        fighter.health -= bullet.getDamage();
+                        if (fighter.health <= 0){
+                            player.setScore(fighter.getScore());
+                            tempFighter.remove();
+                            fighter.destroy();
+                        }
+                    }
+                }
+            }
+        }
+
+        enemyBulletFactory.setIterator();
+        enemyBulletFactory.update();
+
+        if (player.getScore() % 200 == 0 && reloadFactory.isEmpty() && player.getScore() != 0){
+            int f = (60/player.getFireRate()) + 1;
+            if(f > 60){
+                f = 60;
+            }
+
+            Reload tempReload = new Reload(context, screenX, screenY, f);
             tempReload.genPosX();
             reloadFactory.add(tempReload);
         }
@@ -231,12 +306,13 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         while (tempReload.hasNext()){
             Reload reload = tempReload.next();
             if (reload.getCollisionBound().intersect(player.getCollisionBound())){
+                player.setFireRate(reload.getFireRate());
+
                 tempReload.remove();
                 reload.destroy();
-                //player.setFireRate();
+
             }
         }
-
         if (player.getHealth() <= 0){
             onDetachedFromWindow();
         }
@@ -262,6 +338,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             //canvas.drawRect(asteroid.collisionBound, paint);
         }
 
+        for (Fighter fighter: fighterFactory.getFighter()){
+            canvas.drawBitmap(fighter.getModel(), fighter.posX, fighter.posY, null);
+        }
+
         for (Reload reload: reloadFactory.getArray()) {
             canvas.drawBitmap(reload.getModel(), reload.posX, reload.posY, null);
             //canvas.drawRect(asteroid.collisionBound, paint);
@@ -272,8 +352,20 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             //canvas.drawRect(playerBullet.getCollisionBound(), paint);
         }
 
+        for (Bullet enemyBullet : enemyBulletFactory.getArray()) {
+            canvas.drawBitmap(enemyBullet.getModel(), enemyBullet.getX(), enemyBullet.getY(), null);
+            //canvas.drawRect(playerBullet.getCollisionBound(), paint);
+        }
+
         canvas.drawBitmap(player.getModel(), player.getX(), player.getY(), null);
         //canvas.drawRect(player.getCollisionBound(), paint);
+
+        Paint text = new Paint();
+        //canvas.drawPaint(paint);
+        text.setColor(Color.WHITE);
+        text.setTextSize(56);
+        canvas.drawText("Health: "+ String.valueOf(player.getHealth()), 10, 50, text);
+        canvas.drawText("Score: " + String.valueOf(player.getScore()), 10, 110, text);
     }
 
     public List<Bullet> getPlayerBullets(){
@@ -292,10 +384,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     protected void onDetachedFromWindow() {
-        gameState = GameState.CLOSED;
         if (player.getHealth() <= 0){
             onGameOver();
         }
+        gameState = GameState.CLOSED;
         //Log.d("Game","Game was closed");
         super.onDetachedFromWindow();
     }
