@@ -7,7 +7,7 @@ Semestral project for subject TAMZ II focused on android development.
 Game developed by student Lukáš Moravec at Technical University of Ostrava.
 
 **Description:** Space shooter is classic arcade game. Basiccaly as game pregresses, you will earn upgrades for your spaceship.
-Point of game is to get the highest score and get your name on leaderboard. Game also have some boss fights.
+Point of game is to get the highest score and get your name on leaderboard.
 
 **Features:**
 - Leaderboard
