@@ -1,9 +1,13 @@
 package com.example.spaceshooter.Game;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -65,6 +69,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     private GameState gameState;
     private GameThread gameThread;
     private boolean gameOver = false;
+    Bitmap pause;
+    SoundPool sp;
+    int soundIds[] = new int[10];
 
     public GameView(Context context) {
         super(context);
@@ -90,6 +97,27 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         player = new Player(context, getWidth(), getHeight());
         player.setFireRate(3);
         gameState = GameState.RUNNING;
+        pause = BitmapFactory.decodeResource(context.getResources(), R.drawable.pause);
+
+        if(Sounds.getInstance().getIsPlaying()){
+            sp = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
+
+            soundIds = new int[10];
+            soundIds[0] = sp.load(context, R.raw.tir, 1);
+            soundIds[1] = sp.load(context, R.raw.destroyed, 1);
+        }
+    }
+
+    private void bulletSound(){
+        if(Sounds.getInstance().getIsPlaying()){
+            sp.play(soundIds[0], 0.2f, 0.2f, 1, 0, 1.0f);
+        }
+    }
+
+    private void destroyedSound(){
+        if(Sounds.getInstance().getIsPlaying()){
+            sp.play(soundIds[1], 1, 1, 1, 0, 1.0f);
+        }
     }
 
     @Override
@@ -121,11 +149,18 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         switch (event.getAction()){
             case MotionEvent.ACTION_DOWN:
+                //Check if the x and y position of the touch is inside the bitmap
+                //Intent pause = new Intent(context, MainActivity.class);
                 if(event.getX() <= screenX * 3/8){
                     this.getPlayer().moveLeft(-1);
                 }
                 else if(event.getX() >= screenX * 5/8){
                     this.getPlayer().moveLeft(1);
+                }
+
+                if(event.getX() > screenX - getPause().getWidth() && event.getY() < getPause().getHeight()){
+                    Log.d("Start", "Back to menu");
+                    onPause();
                 }
                 return true;
             case MotionEvent.ACTION_UP:
@@ -165,6 +200,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             player.setCooldown();
             if(player.getCooldown() == player.getFireRate()){
                 bulletFactory.add(new Bullet(context, screenY, player.getX(), player.getY(), BulletMode.SINGLE, player.getModel(), 1, 30));
+                bulletSound();
             }
         }
 
@@ -208,7 +244,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             }
         }
 
-        if(asteroidFactory.getArray().size() < 3){
+        if(asteroidFactory.getArray().size() < 4){
             Asteroid tempAsteroid = new Asteroid(context, screenX, screenY);
             tempAsteroid.genPosX();
             asteroidFactory.add(tempAsteroid);
@@ -222,6 +258,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             if (asteroid.getCollisionBound().intersect(player.getCollisionBound())){
                 tempAsteriod.remove();
                 asteroid.destroy();
+                destroyedSound();
                 player.hit(asteroid.getDamage());
                 onHealthChanged();
             }
@@ -237,6 +274,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                             player.setScore(asteroid.getScore());
                             tempAsteriod.remove();
                             asteroid.destroy();
+                            destroyedSound();
                         }
                     }
                 }
@@ -247,7 +285,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             Fighter tempFighter = new Fighter(context, screenX, screenY);
             tempFighter.genPosX();
             fighterFactory.add(tempFighter);
-            player.setScore(1250);
         }
 
         if(player.getScore() % 200 == 0 && fighterFactory.getFighter().size() < 3 && player.getScore() != 0){
@@ -262,10 +299,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             Fighter fighter = tempFighter.next();
             if(new Random().nextInt(100) % 100 == 0){
                 enemyBulletFactory.add(new Bullet(context, screenY, fighter.getX(), fighter.getY(), BulletMode.SINGLE, fighter.getModel(), -1, -30, CollisionCategory.ENEMY));
+                bulletSound();
             }
             if (fighter.getCollisionBound().intersect(player.getCollisionBound())){
                 tempFighter.remove();
                 fighter.destroy();
+                destroyedSound();
                 player.hit(fighter.getDamage());
                 onHealthChanged();
             }
@@ -281,6 +320,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
                             player.setScore(fighter.getScore());
                             tempFighter.remove();
                             fighter.destroy();
+                            destroyedSound();
                         }
                     }
                 }
@@ -317,12 +357,11 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             onDetachedFromWindow();
         }
     }
-
     public void draw(Canvas canvas) {
         super.draw(canvas);
         Paint paint = new Paint();
         paint.setColor(Color.WHITE);
-
+        canvas.drawBitmap(player.getModel(), player.getX(), player.getY(), null);
         for (Heal heal: healFactory.getArray()) {
             canvas.drawBitmap(heal.getModel(), heal.posX, heal.posY, null);
             //canvas.drawRect(heal.collisionBound, paint);
@@ -356,8 +395,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
             canvas.drawBitmap(enemyBullet.getModel(), enemyBullet.getX(), enemyBullet.getY(), null);
             //canvas.drawRect(playerBullet.getCollisionBound(), paint);
         }
-
-        canvas.drawBitmap(player.getModel(), player.getX(), player.getY(), null);
         //canvas.drawRect(player.getCollisionBound(), paint);
 
         Paint text = new Paint();
@@ -366,6 +403,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
         text.setTextSize(56);
         canvas.drawText("Health: "+ String.valueOf(player.getHealth()), 10, 50, text);
         canvas.drawText("Score: " + String.valueOf(player.getScore()), 10, 110, text);
+        canvas.drawBitmap(pause, screenX-pause.getWidth()-8, 8, null);
     }
 
     public List<Bullet> getPlayerBullets(){
@@ -374,6 +412,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
     public int getScreenY(){
         return screenY;
+    }
+
+    public int getScreenX() {
+        return screenX;
+    }
+
+    public Bitmap getPause() {
+        return pause;
     }
 
     @Override
@@ -407,7 +453,6 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private  List<Game.GameListener> gameListeners = new ArrayList<>();
-
     public void  addGameListener(Game.GameListener gameListener){
         gameListeners.add(gameListener);
     }
@@ -415,6 +460,12 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback {
     public void onGameOver(){
         for(Game.GameListener gameListener : gameListeners){
             gameListener.onGameOver();
+        }
+    }
+
+    public void onPause(){
+        for(Game.GameListener gameListener : gameListeners){
+            gameListener.onPause();
         }
     }
 }

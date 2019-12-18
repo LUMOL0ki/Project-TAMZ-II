@@ -9,7 +9,7 @@ public class Sounds {
         return ourInstance;
     }
 
-    private boolean isPlaying = false;
+    private boolean isPlaying = true;
 
     private Sounds() {
     }

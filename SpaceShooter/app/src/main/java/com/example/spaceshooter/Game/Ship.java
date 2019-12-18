@@ -11,3 +11,7 @@ public interface Ship {
     int getX();
     int getY();
 }
+
+enum MoveSet{
+    SINUS
+}

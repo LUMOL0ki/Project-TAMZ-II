@@ -3,7 +3,9 @@ package com.example.spaceshooter;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.Drawable;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -25,6 +27,10 @@ import com.example.spaceshooter.Game.GameState;
 import com.example.spaceshooter.Game.GameView;
 import com.example.spaceshooter.Game.Sounds;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
 import java.util.Observable;
 
 
@@ -53,16 +59,18 @@ public class GameActivity extends AppCompatActivity{
             });
         }
         super.onCreate(savedInstanceState);
+
         UIManager = new UIManager(this.getWindow());
         //Fullscreen
         UIManager.setFullscreen();
         //Navigation bar
         UIManager.hideNavigationBar();
         setContentView(R.layout.activity_game);
-
-        gameView = findViewById(R.id.gameView);
         moveSpeed = 10;
 
+        gameView = findViewById(R.id.gameView);
+        gameView.getPlayer().setScore(getIntent().getIntExtra("Score", 0));
+        gameView.getPlayer().initHealth(getIntent().getIntExtra("Health", 100));
         sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
         sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
@@ -98,6 +106,14 @@ public class GameActivity extends AppCompatActivity{
                 Sounds.release(mediaPlayer);
                 startActivity(startGameOver);
             }
+
+            @Override
+            public void onPause() {
+                Intent pause = new Intent(getBaseContext(), MainActivity.class);
+                Sounds.release(mediaPlayer);
+                save();
+                startActivity(pause);
+            }
         };
 
         gameView.addGameListener(gameListener);
@@ -109,6 +125,9 @@ public class GameActivity extends AppCompatActivity{
 
             @Override
             public void onViewDetachedFromWindow(View v) {
+                if(gameView.getPlayer().getHealth() > 0){
+                    save();
+                }
                 Sounds.release(mediaPlayer);
             }
         });
@@ -116,11 +135,14 @@ public class GameActivity extends AppCompatActivity{
 
     public void onClickFire(View view){
         boolean f = gameView.getPlayer().fire();
+        Button fireBtn = findViewById(R.id.fireButton);
         if(f){
             Log.d("Player", "firing");
+            fireBtn.setBackgroundColor(getResources().getColor(R.color.continueEnabled));
         }
         else {
             Log.d("Player", "not firing");
+            fireBtn.setBackgroundColor(getResources().getColor(R.color.continueDisabled));
         }
 
     }
@@ -138,4 +160,20 @@ public class GameActivity extends AppCompatActivity{
         super.onPause();
         sensorManager.unregisterListener(sensorEventListener);
     }
+
+    private void save(){
+        FileOutputStream outputStream;
+        try {
+            String content;
+            content = gameView.getPlayer().getHealth() + " " + gameView.getPlayer().getScore() + "\n";
+            Log.d("Save", "Saved " + gameView.getPlayer().getHealth() + " " + gameView.getPlayer().getScore() + "\n");
+            outputStream = openFileOutput("Save.txt", getBaseContext().MODE_PRIVATE);
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
 }

@@ -9,11 +9,14 @@ import com.example.spaceshooter.R;
 
 import java.util.Random;
 
+import static java.lang.Math.PI;
 import static java.lang.Math.cos;
 import static java.lang.Math.sin;
 import static java.lang.Math.toRadians;
 
 public class Fighter extends EnemyShip {
+
+    MoveSet moveSet;
 
     public Fighter(Context context, int screenX, int screenY){
         init(context, screenX, screenY, 30, 25, 50);
@@ -40,6 +43,7 @@ public class Fighter extends EnemyShip {
         this.model = Bitmap.createScaledBitmap(this.model, this.model.getWidth() * 12/25, this.model.getHeight() * 12/25, false);
         this.collisionBound = new Rect(0, 0, this.model.getWidth(), this.model.getHeight());
         this.posY = -model.getHeight();
+        //moveSet = MoveSet.SINUS;
     }
 
     @Override
@@ -47,9 +51,21 @@ public class Fighter extends EnemyShip {
 
     }
 
+    int numberOfTicks = 0;
+
     public void moveForward(float angle){
-        this.posX += speed * sin(toRadians(angle));
-        this.posY += speed * cos(toRadians(angle));
+        switch (moveSet){
+            case SINUS:
+                numberOfTicks++;
+                //posX = maxX/2-(int)cos(numberOfTicks*posY*PI)*20;
+                posY += speed;
+                break;
+            default:
+                this.posX += speed * sin(toRadians(angle));
+                this.posY += speed * cos(toRadians(angle));
+                break;
+        }
+
         collisionBound.offsetTo(posX, posY);
     }
 

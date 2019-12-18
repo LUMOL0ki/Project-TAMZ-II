@@ -16,6 +16,7 @@ import com.example.spaceshooter.Game.Sounds;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 
 public class GameOverActivity extends AppCompatActivity {
@@ -79,18 +80,36 @@ public class GameOverActivity extends AppCompatActivity {
     public void onRetry(View view){
         Intent startNewGame = new Intent(getBaseContext(), GameActivity.class);
         Sounds.release(mediaPlayer);
+        SetSave();
         startActivity(startNewGame);
     }
 
     public void onBackToMenu(View view){
         Intent backToMenu = new Intent(getBaseContext(), MainActivity.class);
         Sounds.release(mediaPlayer);
+        SetSave();
         startActivity(backToMenu);
     }
 
     public void onSave(View view){
         Intent saveScore = new Intent(getBaseContext(), SaveScoreActivity.class);
         saveScore.putExtra("score", score);
+        SetSave();
         startActivity(saveScore);
+    }
+
+    public  void SetSave(){
+        FileOutputStream outputStream;
+        try {
+            String content;
+            content = 0 + " " + 0 + "\n";
+            Log.d("Save", "Saved " + 0 + " " + 0 + "\n");
+            outputStream = openFileOutput("Save.txt", getBaseContext().MODE_PRIVATE);
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

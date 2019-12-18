@@ -3,11 +3,13 @@ package com.example.spaceshooter.Game.Factory;
 import android.content.Context;
 import android.graphics.Rect;
 import android.util.Log;
+import android.widget.Switch;
 
 import com.example.spaceshooter.Game.Fighter;
 
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Random;
 
 import static java.lang.Math.sin;
 
@@ -67,8 +69,26 @@ public class EnemyFactory implements Factory{
     }
 
     public void createFleet(Context context, int screenX, int screenY,int size){
-        for(int i = 0; i < size; i++){
-            fighters.add(new Fighter(context, screenX, screenY, 200*i, -300*i));
+        int random = new Random().nextInt(3);
+
+        switch(random){
+            case 0:
+                for(int i = 0; i < size; i++){
+                    fighters.add(new Fighter(context, screenX, screenY, 200*i, -300*i));
+                }
+                break;
+            case 1:
+                for(int i = 0; i < size; i++){
+                    fighters.add(new Fighter(context, screenX, screenY, screenX-200-200*i, -300*i));
+                }
+                break;
+            case 2:
+                for(int i = 0; i < size; i++){
+                    fighters.add(new Fighter(context, screenX, screenY, screenX-200/2, -300*i));
+                }
+                break;
+                default:
+                    break;
         }
     }
 

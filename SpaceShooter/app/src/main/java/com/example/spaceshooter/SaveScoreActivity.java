@@ -95,8 +95,21 @@ public class SaveScoreActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
-            Intent startGameOver = new Intent(getBaseContext(), MainActivity.class);
-            startActivity(startGameOver);
+
+        try {
+            String content;
+            content = 0 + " " + 0 + "\n";
+            Log.d("Save", "Saved " + 0 + " " + 0 + "\n");
+            outputStream = openFileOutput("Save.txt", getBaseContext().MODE_PRIVATE);
+            outputStream.write(content.getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Intent startGameOver = new Intent(getBaseContext(), MainActivity.class);
+        startActivity(startGameOver);
         }
     }
 }

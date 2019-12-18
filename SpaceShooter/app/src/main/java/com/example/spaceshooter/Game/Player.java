@@ -76,6 +76,10 @@ public class Player implements Ship{
         return health;
     }
 
+    public void initHealth(int health){
+        this.health = health;
+    }
+
     public Bitmap getModel() {
         return model;
     }

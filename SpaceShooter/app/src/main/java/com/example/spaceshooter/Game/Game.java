@@ -16,5 +16,6 @@ public class Game {
 
     public  interface GameListener{
         void onGameOver();
+        void onPause();
     }
 }

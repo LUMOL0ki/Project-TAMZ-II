@@ -28,10 +28,16 @@ public class MainActivity extends AppCompatActivity {
     private UIManager UIManager;
     private MediaPlayer mediaPlayer;
     private boolean isMadiaPlayer = false;
+    int health;
+    int score;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.space_station);
+
+        health = 0;
+        score = 0;
 
         UIManager = new UIManager(this.getWindow());
         //Fullscreen
@@ -39,17 +45,15 @@ public class MainActivity extends AppCompatActivity {
         //Navigation bar
         UIManager.hideNavigationBar();
         setContentView(R.layout.activity_main);
-
-        Button continueBtn = findViewById(R.id.continueButton);
-        continueBtn.setEnabled(false);
+        GetSave();
 
         if (Sounds.getInstance().getIsPlaying()) {
             mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                 @Override
                 public void onPrepared(MediaPlayer mp) {
                     isMadiaPlayer = true;
-                    mp.setLooping(true);
-                    mp.start();
+                    mediaPlayer.setLooping(true);
+                    mediaPlayer.start();
                 }
             });
         }
@@ -59,17 +63,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         //Navigation bar
+        GetSave();
         UIManager.hideNavigationBar();
         if (Sounds.getInstance().getIsPlaying()) {
-            mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.space_station);
-            mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                @Override
-                public void onPrepared(MediaPlayer mp) {
-                    isMadiaPlayer = true;
-                    mp.setLooping(true);
-                    mp.start();
-                }
-            });
+            if(mediaPlayer == null){
+                mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.space_station);
+                mediaPlayer.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    @Override
+                    public void onPrepared(MediaPlayer mp) {
+                        isMadiaPlayer = true;
+                        mediaPlayer.setLooping(true);
+                        mediaPlayer.start();
+                    }
+                });
+            }
         }
         else {
             //mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.space_station);
@@ -81,20 +88,14 @@ public class MainActivity extends AppCompatActivity {
         //mediaPlayer = MediaPlayer.create(getBaseContext(), R.raw.space_station);
     }
 
+
+
     public void onContinueButtonClick(View view){
         Intent continueGame = new Intent(getBaseContext(), GameActivity.class);
+        continueGame.putExtra("Health", health);
+        continueGame.putExtra("Score", score);
         Sounds.release(mediaPlayer);
         startActivity(continueGame);
-    }
-
-    public void continueButtonSetEnabled(boolean enabled){
-        Button continueBtn = findViewById(R.id.continueButton);
-        continueBtn.setEnabled(enabled);
-        /*if(enabled){
-            continueBtn.setBackgroundColor(getResources().getColor(R.color.continueEnabled));
-        }else {
-            continueBtn.setBackgroundColor(getResources().getColor(R.color.continueDisabled));
-        }*/
     }
 
     public void onNewGameButtonClick(View view){
@@ -115,5 +116,33 @@ public class MainActivity extends AppCompatActivity {
         //mediaPlayer.release();
         //mediaPlayer = null;
         startActivity(openOptions);
+    }
+
+    public  void GetSave(){
+        try {
+            FileInputStream fileInputStream = openFileInput("Save.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream));
+
+            StringBuffer sb = new StringBuffer();
+            String line = reader.readLine();
+
+            while (line != null) {
+                sb.append(line+ ", ");
+                Log.d("Save", line);
+                String[] split = line.split(" ");
+                health = Integer.parseInt(split[0]);
+                score = Integer.parseInt(split[1]);
+                line = reader.readLine();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Button continueBtn = findViewById(R.id.continueButton);
+        continueBtn.setEnabled(false);
+        if(health != 0){
+            continueBtn = findViewById(R.id.continueButton);
+            continueBtn.setEnabled(true);
+        }
     }
 }
