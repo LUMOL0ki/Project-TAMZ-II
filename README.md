@@ -10,7 +10,6 @@ Game developed by student Lukáš Moravec at Technical University of Ostrava.
 Point of game is to get the highest score and get your name on leaderboard. Game also have some boss fights.
 
 **Features:**
-- DB
 - Leaderboard
 - Canvas
 - Multimedia - audio
